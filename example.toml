@@ -1,0 +1,57 @@
+[logging]
+level = "info"
+output = "stdout"
+
+[api]
+enabled = true
+bind = ":8888"
+
+[defaults]
+max_connections = 100
+client_idle_timeout = "120"
+
+#########################
+# Master
+[servers.master]
+bind = "0.0.0.0:5432"
+protocol = "tcp"
+
+[servers.master.discovery]
+kind = "srv"
+srv_lookup_server = "172.17.0.1:53"
+srv_lookup_pattern = "_postgres._tcp.service.consul."
+failpolicy = "keeplast"
+interval = "60s"
+timeout = "2s"
+
+[servers.master.healthcheck]
+kind = "exec"
+interval = "20s"
+timeout = "2s"
+
+exec_command = "/usr/local/bin/pg-check.sh"
+exec_expected_positive_output = "master"
+exec_expected_negative_output = "replica"
+
+#########################
+# Replicas
+[servers.replica]
+bind = "0.0.0.0:5433"
+protocol = "tcp"
+
+[servers.replica.discovery]
+kind = "srv"
+srv_lookup_server = "172.17.0.1:53"
+srv_lookup_pattern = "_postgres._tcp.service.consul."
+failpolicy = "keeplast"
+interval = "60s"
+timeout = "2s"
+
+[servers.replica.healthcheck]
+kind = "exec"
+interval = "20s"
+timeout = "2s"
+
+exec_command = "/usr/local/bin/pg-check.sh"
+exec_expected_positive_output = "master"
+exec_expected_negative_output = "replica"
